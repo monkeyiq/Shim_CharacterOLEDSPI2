@@ -4,8 +4,26 @@
 #include <inttypes.h>
 #include "Print.h"
 
-class Shim_CharacterOLEDSPI2 : public Print {
+class ChipSelectable
+{
+  public:
+    virtual void selectChip() = 0;
+    virtual void unselectChip() = 0;
+};
 
+
+class ChipSelectionRAII 
+{
+    ChipSelectable* cs;
+  public:
+    ChipSelectionRAII( ChipSelectable* cs );
+    ~ChipSelectionRAII();
+};
+
+
+class Shim_CharacterOLEDSPI2 : public Print, public ChipSelectable {
+
+    int chipSelectCount;
     int chipSelect;
     void meth_impl( int m, int extrasz  );
     void meth_flush();
@@ -14,40 +32,42 @@ class Shim_CharacterOLEDSPI2 : public Print {
     void meth( int m, uint8_t a, uint8_t b );
 
     void sendByte( byte b );
-    
+
+    void selectChip();
+    void unselectChip();
     
 public:
     void shim_setup( int _chipSelect );
     void mirror_reply();
 
-  Shim_CharacterOLEDSPI2(uint8_t rs, uint8_t rw, uint8_t enable,
-		uint8_t d4, uint8_t d5, uint8_t d6, uint8_t d7);
-  void init(uint8_t rs, uint8_t rw, uint8_t enable,
-	    uint8_t d4, uint8_t d5, uint8_t d6, uint8_t d7);
+    Shim_CharacterOLEDSPI2(uint8_t rs, uint8_t rw, uint8_t enable,
+                           uint8_t d4, uint8_t d5, uint8_t d6, uint8_t d7);
+    void init(uint8_t rs, uint8_t rw, uint8_t enable,
+              uint8_t d4, uint8_t d5, uint8_t d6, uint8_t d7);
 
   
-  void begin(uint8_t cols, uint8_t rows);
+    void begin(uint8_t cols, uint8_t rows);
 
-  void clear();
-  void home();
+    void clear();
+    void home();
 
-  void noDisplay();
-  void display();
-  void noBlink();
-  void blink();
-  void noCursor();
-  void cursor();
-  void scrollDisplayLeft();
-  void scrollDisplayRight();
-  void leftToRight();
-  void rightToLeft();
-  void autoscroll();
-  void noAutoscroll();
+    void noDisplay();
+    void display();
+    void noBlink();
+    void blink();
+    void noCursor();
+    void cursor();
+    void scrollDisplayLeft();
+    void scrollDisplayRight();
+    void leftToRight();
+    void rightToLeft();
+    void autoscroll();
+    void noAutoscroll();
 
 //  void createChar(uint8_t, uint8_t[]);
-  void setCursor(uint8_t, uint8_t); 
-  virtual size_t write(uint8_t);
-  void command(uint8_t);
+    void setCursor(uint8_t, uint8_t); 
+    virtual size_t write(uint8_t);
+    void command(uint8_t);
   
 };
 

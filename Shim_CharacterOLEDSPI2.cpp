@@ -69,11 +69,7 @@ void Shim_CharacterOLEDSPI2::meth_impl( int m, int extrasz )
     }
 #endif
 
-    digitalWrite( chipSelect, LOW );
-    // Let the slave come to life
-//    delayMicroseconds(1000); 
-    delayMicroseconds(500); 
-
+    selectChip();
     sendByte( 'm' );
     sendByte( (char)(2+extrasz) );
     sendByte( (char)m );
@@ -86,10 +82,32 @@ void Shim_CharacterOLEDSPI2::meth_flush()
 //    delayMicroseconds(200); 
 //    delayMicroseconds(1000); 
 
-    digitalWrite( chipSelect, HIGH );
-    delayMicroseconds(250); 
-    
+    unselectChip();
 }
+
+void Shim_CharacterOLEDSPI2::selectChip()
+{
+    if( !chipSelectCount )
+    {
+        digitalWrite( chipSelect, LOW );
+
+        // Give the slave some time in order to come to life
+//      delayMicroseconds(1000); 
+        delayMicroseconds(500);
+    }
+    chipSelectCount++;
+}
+
+void Shim_CharacterOLEDSPI2::unselectChip()
+{
+    chipSelectCount--;
+    if( !chipSelectCount )
+    {
+        digitalWrite( chipSelect, HIGH );
+        delayMicroseconds(250);
+    }
+}
+
 
 
 void Shim_CharacterOLEDSPI2::meth( int m )
@@ -116,6 +134,8 @@ void Shim_CharacterOLEDSPI2::meth( int m, uint8_t a, uint8_t b )
 
 Shim_CharacterOLEDSPI2::Shim_CharacterOLEDSPI2( uint8_t rs, uint8_t rw, uint8_t enable,
                                               uint8_t d4, uint8_t d5, uint8_t d6, uint8_t d7)
+    :
+    chipSelectCount( 0 )
 {
 }
 
@@ -123,6 +143,7 @@ Shim_CharacterOLEDSPI2::Shim_CharacterOLEDSPI2( uint8_t rs, uint8_t rw, uint8_t 
 void Shim_CharacterOLEDSPI2::init( uint8_t rs, uint8_t rw, uint8_t enable,
                                   uint8_t d4, uint8_t d5, uint8_t d6, uint8_t d7)
 {
+    chipSelectCount = 0;
 }
 
 
@@ -204,4 +225,17 @@ void Shim_CharacterOLEDSPI2::command(uint8_t a)
     meth( METH_command, a );
 }
   
+
+
+ChipSelectionRAII::ChipSelectionRAII( ChipSelectable* _cs )
+    :
+    cs( _cs )
+{
+    cs->selectChip();
+}
+
+ChipSelectionRAII::~ChipSelectionRAII()
+{
+    cs->unselectChip();
+}
 
