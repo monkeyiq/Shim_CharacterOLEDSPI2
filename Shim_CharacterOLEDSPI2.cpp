@@ -17,6 +17,8 @@ void Shim_CharacterOLEDSPI2::mirror_reply()
 void Shim_CharacterOLEDSPI2::sendByte( byte b )
 {
     SPI.transfer( b );
+
+    // at div16 removing...
     delayMicroseconds(250); 
 //    delay(1);
 }
@@ -28,6 +30,14 @@ void Shim_CharacterOLEDSPI2::meth_impl( int m, int extrasz )
     
 //  Serial.print("meth() called top");
 
+    callcount++;
+    if( callcount == 4 )
+    {
+        // mirror_reply();
+        callcount=0;
+//        delay(20);
+    }
+    
     
 #if 0
     //
@@ -61,17 +71,9 @@ void Shim_CharacterOLEDSPI2::meth_impl( int m, int extrasz )
 
     digitalWrite( chipSelect, LOW );
     // Let the slave come to life
-    delay(10);
+//    delayMicroseconds(1000); 
+    delayMicroseconds(500); 
 
-#if 0
-    SPI.transfer( 'm' );
-    delay(1);
-    SPI.transfer( 2 );
-    delay(1);
-    SPI.transfer( 2 );
-    delay(1);
-#endif
-    
     sendByte( 'm' );
     sendByte( (char)(2+extrasz) );
     sendByte( (char)m );
@@ -81,12 +83,11 @@ void Shim_CharacterOLEDSPI2::meth_impl( int m, int extrasz )
 
 void Shim_CharacterOLEDSPI2::meth_flush()
 {
-//    delay(1);
 //    delayMicroseconds(200); 
-//    delayMicroseconds(1); 
+//    delayMicroseconds(1000); 
 
-// ////   digitalWrite( chipSelect, HIGH );
-//    delay(1000);
+    digitalWrite( chipSelect, HIGH );
+    delayMicroseconds(250); 
     
 }
 
