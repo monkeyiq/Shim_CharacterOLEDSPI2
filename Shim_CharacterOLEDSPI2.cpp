@@ -1,3 +1,27 @@
+/**
+ *   Copyright (C) 2013 Ben Martin
+ *
+ *   Code for doing interesting things on Arduino.
+ *
+ *   This arduino code is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   libferris is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with libferris.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *   For more details see the COPYING file in the root directory of this
+ *   distribution.
+ *
+ ********************************************************************
+ *
+ */
 
 #include "Arduino.h"
 #include "privdetails.h"
@@ -73,15 +97,10 @@ void Shim_CharacterOLEDSPI2::meth_impl( int m, int extrasz )
     sendByte( 'm' );
     sendByte( (char)(2+extrasz) );
     sendByte( (char)m );
-
-    
 }
 
 void Shim_CharacterOLEDSPI2::meth_flush()
 {
-//    delayMicroseconds(200); 
-//    delayMicroseconds(1000); 
-
     unselectChip();
 }
 
@@ -89,11 +108,15 @@ void Shim_CharacterOLEDSPI2::selectChip()
 {
     if( !chipSelectCount )
     {
-        digitalWrite( chipSelect, LOW );
+          SPI.setDataMode(SPI_MODE0);
+          SPI.setClockDivider(SPI_CLOCK_DIV16);
+          SPI.setBitOrder( MSBFIRST );
+  
+          digitalWrite( chipSelect, LOW );
 
         // Give the slave some time in order to come to life
-//      delayMicroseconds(1000); 
-        delayMicroseconds(500);
+//        delayMicroseconds(1000); 
+          delayMicroseconds(500);
     }
     chipSelectCount++;
 }
@@ -104,6 +127,7 @@ void Shim_CharacterOLEDSPI2::unselectChip()
     if( !chipSelectCount )
     {
         digitalWrite( chipSelect, HIGH );
+//        delayMicroseconds(1000); 
         delayMicroseconds(250);
     }
 }
@@ -238,4 +262,5 @@ ChipSelectionRAII::~ChipSelectionRAII()
 {
     cs->unselectChip();
 }
+
 
